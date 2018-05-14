@@ -772,7 +772,7 @@ model = build_graph(keep_probability, rnn_size, num_layers, batch_size, learning
 with tf.Session() as sess:
     # Load saved model
     saver = tf.train.Saver()
-    save_path = saver.save(sess, "./model.ckpt")
+    save_path = saver.save(sess, "model.ckpt")
     saver.restore(sess, checkpoint)
     
     #Multiply by batch_size to match the model's input parameters
@@ -792,7 +792,41 @@ print('\nSummary')
 print('  Word Ids:       {}'.format([i for i in answer_logits if i != pad]))
 print('  Response Words: {}'.format("".join([int_to_vocab[i] for i in answer_logits if i != pad])))
 
+random = np.random.randint(0,len(testing_sorted))
+text = testing_sorted[random]
+text = noise_maker(text, 0.95)
 
+print('\nText')
+print('  Word Ids:    {}'.format([i for i in text]))
+print('  Input Words: {}'.format("".join([int_to_vocab[i] for i in text])))
+
+print('\nSummary')
+print('  Word Ids:       {}'.format([i for i in answer_logits if i != pad]))
+print('  Response Words: {}'.format("".join([int_to_vocab[i] for i in answer_logits if i != pad])))
+
+random = np.random.randint(0,len(testing_sorted))
+text = testing_sorted[random]
+text = noise_maker(text, 0.95)
+
+print('\nText')
+print('  Word Ids:    {}'.format([i for i in text]))
+print('  Input Words: {}'.format("".join([int_to_vocab[i] for i in text])))
+
+print('\nSummary')
+print('  Word Ids:       {}'.format([i for i in answer_logits if i != pad]))
+print('  Response Words: {}'.format("".join([int_to_vocab[i] for i in answer_logits if i != pad])))
+
+random = np.random.randint(0,len(testing_sorted))
+text = testing_sorted[random]
+text = noise_maker(text, 0.95)
+
+print('\nText')
+print('  Word Ids:    {}'.format([i for i in text]))
+print('  Input Words: {}'.format("".join([int_to_vocab[i] for i in text])))
+
+print('\nSummary')
+print('  Word Ids:       {}'.format([i for i in answer_logits if i != pad]))
+print('  Response Words: {}'.format("".join([int_to_vocab[i] for i in answer_logits if i != pad])))
 
 # Examples of corrected sentences:
 # - Spellin is difficult, whch is wyh you need to study everyday.
