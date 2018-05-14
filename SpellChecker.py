@@ -442,8 +442,7 @@ def decoding_layer(dec_embed_input, embeddings, enc_output, enc_state, vocab_siz
     initial_state = tf.contrib.seq2seq.DynamicAttentionWrapperState(enc_state,
                                                                     _zero_state_tensors(rnn_size, 
                                                                                         batch_size, 
-                                                                                        tf.float32),
-                                                                    time=0)
+                                                                                        tf.float32))
 
     with tf.variable_scope("decode"):
         training_logits = training_decoding_layer(dec_embed_input, 
