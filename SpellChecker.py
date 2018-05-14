@@ -773,7 +773,7 @@ model = build_graph(keep_probability, rnn_size, num_layers, batch_size, learning
 with tf.Session() as sess:
     # Load saved model
     saver = tf.train.Saver()
-    save_path = saver.save(sess, "/artifact/model.ckpt")
+    save_path = saver.save(sess, "./model.ckpt")
     saver.restore(sess, checkpoint)
     
     #Multiply by batch_size to match the model's input parameters
