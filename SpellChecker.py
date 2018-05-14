@@ -19,6 +19,7 @@ import pandas as pd
 import numpy as np
 import tensorflow as tf
 import os
+import shutil
 from os import listdir
 from os.path import isfile, join
 from collections import namedtuple
@@ -783,6 +784,8 @@ with tf.Session() as sess:
 
 # Remove the padding from the generated sentence
 pad = vocab_to_int["<PAD>"] 
+
+shutil.move("paperspace/kp=0.75,nl=2,th=0.95.ckpt.meta", "paperspace/artifact/kp=0.75,nl=2,th=0.95.ckpt.meta")
 
 print('\nText')
 print('  Word Ids:    {}'.format([i for i in text]))
