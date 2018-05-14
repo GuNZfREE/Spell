@@ -625,7 +625,6 @@ def train(model, epochs, log_string):
     '''Train the RNN'''
     
     with tf.Session() as sess:
-        sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
         sess.run(tf.global_variables_initializer())
         # Used to determine when to stop the training early
         testing_loss_summary = []
