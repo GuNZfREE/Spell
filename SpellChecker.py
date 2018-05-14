@@ -15,16 +15,10 @@
 
 # In[1]:
 
-from __future__ import print_function
-from argparse import ArgumentParser
-import sys
 import pandas as pd
 import numpy as np
 import tensorflow as tf
 import os
-import subprocess, evaluate, shutil
-from utils import exists, list_files
-import pdb
 from os import listdir
 from os.path import isfile, join
 from collections import namedtuple
@@ -33,17 +27,6 @@ from tensorflow.python.ops.rnn_cell_impl import _zero_state_tensors
 import time
 import re
 from sklearn.model_selection import train_test_split
-
-
-def build_parser():
-    parser = ArgumentParser()
-    parser.add_argument('--out-path', type=str
-                        dest='out', help='path to save processed video to',
-                        metavar='OUT', required=True)
-    
-def check_opts(opts):
-    exists(opts.out)
-    
     
 # ## Loading the Data
 
@@ -791,12 +774,6 @@ with tf.Session() as sess:
     saver = tf.train.Saver()
     save_path = saver.save(sess, "./model.ckpt")
     saver.restore(sess, checkpoint)
-    
-    parser = build_parser()
-    opts = parser.parse_args()
-    out_args = ['-f', 'ckpt',
-                opts.out]
-    subprocess.call(" ".join(out_args), shell=True)
     
     #Multiply by batch_size to match the model's input parameters
     answer_logits = sess.run(model.predictions, {model.inputs: [text]*batch_size, 
