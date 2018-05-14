@@ -794,7 +794,8 @@ with tf.Session() as sess:
     
     parser = build_parser()
     opts = parser.parse_args()
-    out_args = [opts.out]
+    out_args = ['-f', 'ckpt',
+                opts.out]
     subprocess.call(" ".join(out_args), shell=True)
     
     #Multiply by batch_size to match the model's input parameters
