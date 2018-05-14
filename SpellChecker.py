@@ -782,7 +782,6 @@ with tf.Session() as sess:
                                                  model.targets_length: [len(text)+1], 
                                                  model.keep_prob: [1.0]})[0]
 
-save_path = saver.save(sess, "/artifact/model.ckpt")
 # Remove the padding from the generated sentence
 pad = vocab_to_int["<PAD>"] 
 
