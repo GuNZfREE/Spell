@@ -27,13 +27,14 @@ from tensorflow.python.ops.rnn_cell_impl import _zero_state_tensors
 import time
 import re
 from sklearn.model_selection import train_test_split
-    
-# ## Loading the Data
+
+
+# Загружаем данные
 
 # In[2]:
 
+# Загружаем книги
 def load_book(path):
-    """Load a book from its file"""
     input_file = os.path.join(path)
     with open(input_file) as f:
         book = f.read()
@@ -42,7 +43,7 @@ def load_book(path):
 
 # In[3]:
 
-# Collect all of the book file names
+# Собираем книги
 path = './books/'
 book_files = [f for f in listdir(path) if isfile(join(path, f))]
 book_files = book_files[1:]
@@ -50,7 +51,7 @@ book_files = book_files[1:]
 
 # In[4]:
 
-# Load the books using the file names
+# Загружаем все книги в один файл
 books = []
 for book in book_files:
     books.append(load_book(path+book))
@@ -58,7 +59,7 @@ for book in book_files:
 
 # In[5]:
 
-# Compare the number of words in each book 
+# Вычисляем число слов в каждой из книг
 for i in range(len(books)):
     print("There are {} words in {}.".format(len(books[i].split()), book_files[i]))
 
@@ -69,12 +70,11 @@ for i in range(len(books)):
 books[0][:500]
 
 
-# ## Preparing the Data
+# Готовим книги для данных
 
 # In[10]:
-
+# Функция удаления всех ненужных символов
 def clean_text(text):
-    '''Remove unwanted characters and extra spaces from the text'''
     text = re.sub(r'\n', ' ', text) 
     text = re.sub(r'[{}@_*>()\\#%+=\[\]]','', text)
     text = re.sub('a0','', text)
@@ -95,7 +95,7 @@ def clean_text(text):
 
 # In[11]:
 
-# Clean the text of the books
+# Очищаем книги
 clean_books = []
 for book in books:
     clean_books.append(clean_text(book))
@@ -109,7 +109,7 @@ clean_books[0][:500]
 
 # In[13]:
 
-# Create a dictionary to convert the vocabulary (characters) to integers
+# Переводим все слова в int
 vocab_to_int = {}
 count = 0
 for book in clean_books:
@@ -118,7 +118,7 @@ for book in clean_books:
             vocab_to_int[character] = count
             count += 1
 
-# Add special tokens to vocab_to_int
+# Спец-символы
 codes = ['<PAD>','<EOS>','<GO>']
 for code in codes:
     vocab_to_int[code] = count
@@ -127,7 +127,7 @@ for code in codes:
 
 # In[14]:
 
-# Check the size of vocabulary and all of the values
+# Размер словаря слов
 vocab_size = len(vocab_to_int)
 print("The vocabulary contains {} characters.".format(vocab_size))
 print(sorted(vocab_to_int))
@@ -145,7 +145,7 @@ for character, value in vocab_to_int.items():
 
 # In[16]:
 
-# Split the text from the books into sentences.
+# Делим текст книг на предложения
 sentences = []
 for book in clean_books:
     for sentence in book.split('. '):
@@ -163,7 +163,7 @@ sentences[:5]
 
 # In[18]:
 
-# Convert sentences to integers
+# Переводим предложения в int
 int_sentences = []
 
 for sentence in sentences:
@@ -175,7 +175,7 @@ for sentence in sentences:
 
 # In[19]:
 
-# Find the length of each sentence
+# Ищем длину каждого предложения
 lengths = []
 for sentence in int_sentences:
     lengths.append(len(sentence))
@@ -189,7 +189,7 @@ lengths.describe()
 
 # In[21]:
 
-# Limit the data we will use to train our model
+# Ограничиваем нашу модель длиннами предложений
 max_length = 92
 min_length = 10
 
@@ -206,7 +206,7 @@ print("We will use {} to train and test our model.".format(len(good_sentences)))
 
 # In[22]:
 
-# Split the data into training and testing sentences
+# Делим тексты на тренировочные и тестовые
 training, testing = train_test_split(good_sentences, test_size = 0.15, random_state = 2)
 
 print("Number of training sentences:", len(training))
@@ -215,7 +215,7 @@ print("Number of testing sentences:", len(testing))
 
 # In[23]:
 
-# Sort the sentences by length to reduce padding, which will allow the model to train faster
+# Сортируем данные по длине
 training_sorted = []
 testing_sorted = []
 
@@ -237,37 +237,39 @@ for i in range(5):
 
 # In[36]:
 
-letters = ['a','b','c','d','e','f','g','h','i','j','k','l','m',
-           'n','o','p','q','r','s','t','u','v','w','x','y','z',]
+letters = ['а','б','в','г','д','е','ё','ж','з','и','й','к','л',
+           'м','н','о','п','р','с','т','у','ф','х','ц','ч','ш',
+           'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я']
 
+# Создаем ошибку, добавляя, удаляя или меняя местами символы
 def noise_maker(sentence, threshold):
-    '''Relocate, remove, or add characters to create spelling mistakes'''
-    
     noisy_sentence = []
     i = 0
     while i < len(sentence):
+        # Создаем случайное распределение
         random = np.random.uniform(0,1,1)
-        # Most characters will be correct since the threshold value is high
         if random < threshold:
             noisy_sentence.append(sentence[i])
         else:
+            # Создаем ошибку
             new_random = np.random.uniform(0,1,1)
-            # ~33% chance characters will swap locations
+            # 33% вероятность, что поменяем символы местами
             if new_random > 0.67:
                 if i == (len(sentence) - 1):
-                    # If last character in sentence, it will not be typed
+                    # Если символ последний, то не печатаем его
                     continue
                 else:
-                    # if any other character, swap order with following character
+                    # Иначе меняем местами со следующим за ним
                     noisy_sentence.append(sentence[i+1])
                     noisy_sentence.append(sentence[i])
                     i += 1
-            # ~33% chance an extra lower case letter will be added to the sentence
+            # 33% вероятность, что добавим случайный символ
             elif new_random < 0.33:
+                # Рандомно выбираем букву и добавляем ее перед i
                 random_letter = np.random.choice(letters, 1)[0]
                 noisy_sentence.append(vocab_to_int[random_letter])
                 noisy_sentence.append(sentence[i])
-            # ~33% chance a character will not be typed
+            # 33% вероятность, что не печатаем символ
             else:
                 pass     
         i += 1
@@ -286,13 +288,12 @@ for sentence in training_sorted[:5]:
     print()
 
 
-# # Building the Model
+# Строим модель
 
 # In[63]:
 
 def model_inputs():
-    '''Create palceholders for inputs to the model'''
-    
+    # Создаем placeholder для входа
     with tf.name_scope('inputs'):
         inputs = tf.placeholder(tf.int32, [None, None], name='inputs')
     with tf.name_scope('targets'):
@@ -318,10 +319,9 @@ def process_encoding_input(targets, vocab_to_int, batch_size):
 
 
 # In[65]:
-
+# Создаем кодирующие RNN слои 
 def encoding_layer(rnn_size, sequence_length, num_layers, rnn_inputs, keep_prob, direction):
-    '''Create the encoding layer'''
-    
+    # Первый слой
     if direction == 1:
         with tf.name_scope("RNN_Encoder_Cell_1D"):
             for layer in range(num_layers):
@@ -338,7 +338,7 @@ def encoding_layer(rnn_size, sequence_length, num_layers, rnn_inputs, keep_prob,
 
             return enc_output, enc_state
         
-        
+    # Второй RNN
     if direction == 2:
         with tf.name_scope("RNN_Encoder_Cell_2D"):
             for layer in range(num_layers):
@@ -356,9 +356,8 @@ def encoding_layer(rnn_size, sequence_length, num_layers, rnn_inputs, keep_prob,
                                                                             rnn_inputs,
                                                                             sequence_length,
                                                                             dtype=tf.float32)
-            # Join outputs since we are using a bidirectional RNN
+            # Соединяем выходы
             enc_output = tf.concat(enc_output,2)
-            # Use only the forward state because the model can't use both states at once
             return enc_output, enc_state[0]
 
 
@@ -416,7 +415,7 @@ def inference_decoding_layer(embeddings, start_token, end_token, dec_cell, initi
 def decoding_layer(dec_embed_input, embeddings, enc_output, enc_state, vocab_size, inputs_length, targets_length, 
                    max_target_length, rnn_size, vocab_to_int, keep_prob, batch_size, num_layers, direction):
     '''Create the decoding cell and attention for the training and inference decoding layers'''
-    
+    # Создаем декодирующий RNN
     with tf.name_scope("RNN_Decoder_Cell"):
         for layer in range(num_layers):
             with tf.variable_scope('decoder_{}'.format(layer)):
@@ -438,10 +437,9 @@ def decoding_layer(dec_embed_input, embeddings, enc_output, enc_state, vocab_siz
                                                               attn_mech,
                                                               rnn_size)
     
-    initial_state = tf.contrib.seq2seq.DynamicAttentionWrapperState(enc_state,
-                                                                    _zero_state_tensors(rnn_size, 
-                                                                                        batch_size, 
-                                                                                        tf.float32))
+    initial_state = tf.contrib.seq2seq.AttentionWrapperState(enc_state, _zero_state_tensors(rnn_size, 
+                                                                                            batch_size, 
+                                                                                            tf.float32))
 
     with tf.variable_scope("decode"):
         training_logits = training_decoding_layer(dec_embed_input, 
@@ -589,16 +587,16 @@ def build_graph(keep_prob, rnn_size, num_layers, batch_size, learning_rate, embe
     masks = tf.sequence_mask(targets_length, max_target_length, dtype=tf.float32, name='masks')
     
     with tf.name_scope("cost"):
-        # Loss function
+        # Функция потери
         cost = tf.contrib.seq2seq.sequence_loss(training_logits, 
                                                 targets, 
                                                 masks)
         tf.summary.scalar('cost', cost)
 
-    with tf.name_scope("optimze"):
+    with tf.name_scope("optimizer"):
         optimizer = tf.train.AdamOptimizer(learning_rate)
 
-        # Gradient Clipping
+        # Градиентный спуск
         gradients = optimizer.compute_gradients(cost)
         capped_gradients = [(tf.clip_by_value(grad, -5., 5.), var) for grad, var in gradients if grad is not None]
         train_op = optimizer.apply_gradients(capped_gradients)
@@ -616,19 +614,18 @@ def build_graph(keep_prob, rnn_size, num_layers, batch_size, learning_rate, embe
     return graph
 
 
-# ## Training the Model
+# Тренируем модель
 
 # In[74]:
 
 def train(model, epochs, log_string):
-    '''Train the RNN'''
     
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        # Used to determine when to stop the training early
+        # Остановка обучения
         testing_loss_summary = []
 
-        # Keep track of which batch iteration is being trained
+        # Итерация обучения
         iteration = 0
         
         display_step = 30 # The progress of the training will be displayed after every 30 batches
@@ -791,41 +788,6 @@ print('\nSummary')
 print('  Word Ids:       {}'.format([i for i in answer_logits if i != pad]))
 print('  Response Words: {}'.format("".join([int_to_vocab[i] for i in answer_logits if i != pad])))
 
-random = np.random.randint(0,len(testing_sorted))
-text = testing_sorted[random]
-text = noise_maker(text, 0.95)
-
-print('\nText')
-print('  Word Ids:    {}'.format([i for i in text]))
-print('  Input Words: {}'.format("".join([int_to_vocab[i] for i in text])))
-
-print('\nSummary')
-print('  Word Ids:       {}'.format([i for i in answer_logits if i != pad]))
-print('  Response Words: {}'.format("".join([int_to_vocab[i] for i in answer_logits if i != pad])))
-
-random = np.random.randint(0,len(testing_sorted))
-text = testing_sorted[random]
-text = noise_maker(text, 0.95)
-
-print('\nText')
-print('  Word Ids:    {}'.format([i for i in text]))
-print('  Input Words: {}'.format("".join([int_to_vocab[i] for i in text])))
-
-print('\nSummary')
-print('  Word Ids:       {}'.format([i for i in answer_logits if i != pad]))
-print('  Response Words: {}'.format("".join([int_to_vocab[i] for i in answer_logits if i != pad])))
-
-random = np.random.randint(0,len(testing_sorted))
-text = testing_sorted[random]
-text = noise_maker(text, 0.95)
-
-print('\nText')
-print('  Word Ids:    {}'.format([i for i in text]))
-print('  Input Words: {}'.format("".join([int_to_vocab[i] for i in text])))
-
-print('\nSummary')
-print('  Word Ids:       {}'.format([i for i in answer_logits if i != pad]))
-print('  Response Words: {}'.format("".join([int_to_vocab[i] for i in answer_logits if i != pad])))
 
 # Examples of corrected sentences:
 # - Spellin is difficult, whch is wyh you need to study everyday.
