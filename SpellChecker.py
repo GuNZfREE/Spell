@@ -634,7 +634,7 @@ def train(model, epochs, log_string):
         
         display_step = 30 # The progress of the training will be displayed after every 30 batches
         stop_early = 0 
-        stop = 3 # If the batch_loss_testing does not decrease in 3 consecutive checks, stop training
+        stop = 2 # If the batch_loss_testing does not decrease in 3 consecutive checks, stop training
         per_epoch = 3 # Test the model 3 times per epoch
         testing_check = (len(training_sorted)//batch_size//per_epoch)-1
 
