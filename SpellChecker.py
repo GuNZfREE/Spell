@@ -29,12 +29,12 @@ import re
 from sklearn.model_selection import train_test_split
 
 
-# Загружаем данные
+# ## Loading the Data
 
 # In[2]:
 
-# Загружаем книги
 def load_book(path):
+    """Load a book from its file"""
     input_file = os.path.join(path)
     with open(input_file) as f:
         book = f.read()
@@ -43,15 +43,15 @@ def load_book(path):
 
 # In[3]:
 
-# Собираем книги
-path = './books_rus/'
+# Collect all of the book file names
+path = './books/'
 book_files = [f for f in listdir(path) if isfile(join(path, f))]
 book_files = book_files[1:]
 
 
 # In[4]:
 
-# Загружаем все книги в один файл
+# Load the books using the file names
 books = []
 for book in book_files:
     books.append(load_book(path+book))
@@ -59,7 +59,7 @@ for book in book_files:
 
 # In[5]:
 
-# Вычисляем число слов в каждой из книг
+# Compare the number of words in each book 
 for i in range(len(books)):
     print("There are {} words in {}.".format(len(books[i].split()), book_files[i]))
 
@@ -70,11 +70,12 @@ for i in range(len(books)):
 books[0][:500]
 
 
-# Готовим книги для данных
+# ## Preparing the Data
 
 # In[10]:
-# Функция удаления всех ненужных символов
+
 def clean_text(text):
+    '''Remove unwanted characters and extra spaces from the text'''
     text = re.sub(r'\n', ' ', text) 
     text = re.sub(r'[{}@_*>()\\#%+=\[\]]','', text)
     text = re.sub('a0','', text)
@@ -95,7 +96,7 @@ def clean_text(text):
 
 # In[11]:
 
-# Очищаем книги
+# Clean the text of the books
 clean_books = []
 for book in books:
     clean_books.append(clean_text(book))
@@ -109,7 +110,7 @@ clean_books[0][:500]
 
 # In[13]:
 
-# Переводим все слова в int
+# Create a dictionary to convert the vocabulary (characters) to integers
 vocab_to_int = {}
 count = 0
 for book in clean_books:
@@ -118,7 +119,7 @@ for book in clean_books:
             vocab_to_int[character] = count
             count += 1
 
-# Спец-символы
+# Add special tokens to vocab_to_int
 codes = ['<PAD>','<EOS>','<GO>']
 for code in codes:
     vocab_to_int[code] = count
@@ -127,7 +128,7 @@ for code in codes:
 
 # In[14]:
 
-# Размер словаря слов
+# Check the size of vocabulary and all of the values
 vocab_size = len(vocab_to_int)
 print("The vocabulary contains {} characters.".format(vocab_size))
 print(sorted(vocab_to_int))
@@ -145,7 +146,7 @@ for character, value in vocab_to_int.items():
 
 # In[16]:
 
-# Делим текст книг на предложения
+# Split the text from the books into sentences.
 sentences = []
 for book in clean_books:
     for sentence in book.split('. '):
@@ -163,7 +164,7 @@ sentences[:5]
 
 # In[18]:
 
-# Переводим предложения в int
+# Convert sentences to integers
 int_sentences = []
 
 for sentence in sentences:
@@ -175,7 +176,7 @@ for sentence in sentences:
 
 # In[19]:
 
-# Ищем длину каждого предложения
+# Find the length of each sentence
 lengths = []
 for sentence in int_sentences:
     lengths.append(len(sentence))
@@ -189,7 +190,7 @@ lengths.describe()
 
 # In[21]:
 
-# Ограничиваем нашу модель длиннами предложений
+# Limit the data we will use to train our model
 max_length = 92
 min_length = 10
 
@@ -206,7 +207,7 @@ print("We will use {} to train and test our model.".format(len(good_sentences)))
 
 # In[22]:
 
-# Делим тексты на тренировочные и тестовые
+# Split the data into training and testing sentences
 training, testing = train_test_split(good_sentences, test_size = 0.15, random_state = 2)
 
 print("Number of training sentences:", len(training))
@@ -215,7 +216,7 @@ print("Number of testing sentences:", len(testing))
 
 # In[23]:
 
-# Сортируем данные по длине
+# Sort the sentences by length to reduce padding, which will allow the model to train faster
 training_sorted = []
 testing_sorted = []
 
@@ -237,39 +238,37 @@ for i in range(5):
 
 # In[36]:
 
-letters = ['а','б','в','г','д','е','ё','ж','з','и','й','к','л',
-           'м','н','о','п','р','с','т','у','ф','х','ц','ч','ш',
-           'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я']
+letters = ['a','b','c','d','e','f','g','h','i','j','k','l','m',
+           'n','o','p','q','r','s','t','u','v','w','x','y','z',]
 
-# Создаем ошибку, добавляя, удаляя или меняя местами символы
 def noise_maker(sentence, threshold):
+    '''Relocate, remove, or add characters to create spelling mistakes'''
+    
     noisy_sentence = []
     i = 0
     while i < len(sentence):
-        # Создаем случайное распределение
         random = np.random.uniform(0,1,1)
+        # Most characters will be correct since the threshold value is high
         if random < threshold:
             noisy_sentence.append(sentence[i])
         else:
-            # Создаем ошибку
             new_random = np.random.uniform(0,1,1)
-            # 33% вероятность, что поменяем символы местами
+            # ~33% chance characters will swap locations
             if new_random > 0.67:
                 if i == (len(sentence) - 1):
-                    # Если символ последний, то не печатаем его
+                    # If last character in sentence, it will not be typed
                     continue
                 else:
-                    # Иначе меняем местами со следующим за ним
+                    # if any other character, swap order with following character
                     noisy_sentence.append(sentence[i+1])
                     noisy_sentence.append(sentence[i])
                     i += 1
-            # 33% вероятность, что добавим случайный символ
+            # ~33% chance an extra lower case letter will be added to the sentence
             elif new_random < 0.33:
-                # Рандомно выбираем букву и добавляем ее перед i
                 random_letter = np.random.choice(letters, 1)[0]
                 noisy_sentence.append(vocab_to_int[random_letter])
                 noisy_sentence.append(sentence[i])
-            # 33% вероятность, что не печатаем символ
+            # ~33% chance a character will not be typed
             else:
                 pass     
         i += 1
@@ -288,12 +287,13 @@ for sentence in training_sorted[:5]:
     print()
 
 
-# Строим модель
+# # Building the Model
 
 # In[63]:
 
 def model_inputs():
-    # Создаем placeholder для входа
+    '''Create palceholders for inputs to the model'''
+    
     with tf.name_scope('inputs'):
         inputs = tf.placeholder(tf.int32, [None, None], name='inputs')
     with tf.name_scope('targets'):
@@ -319,9 +319,10 @@ def process_encoding_input(targets, vocab_to_int, batch_size):
 
 
 # In[65]:
-# Создаем кодирующие RNN слои 
+
 def encoding_layer(rnn_size, sequence_length, num_layers, rnn_inputs, keep_prob, direction):
-    # Первый слой
+    '''Create the encoding layer'''
+    
     if direction == 1:
         with tf.name_scope("RNN_Encoder_Cell_1D"):
             for layer in range(num_layers):
@@ -338,7 +339,7 @@ def encoding_layer(rnn_size, sequence_length, num_layers, rnn_inputs, keep_prob,
 
             return enc_output, enc_state
         
-    # Второй RNN
+        
     if direction == 2:
         with tf.name_scope("RNN_Encoder_Cell_2D"):
             for layer in range(num_layers):
@@ -356,8 +357,9 @@ def encoding_layer(rnn_size, sequence_length, num_layers, rnn_inputs, keep_prob,
                                                                             rnn_inputs,
                                                                             sequence_length,
                                                                             dtype=tf.float32)
-            # Соединяем выходы
+            # Join outputs since we are using a bidirectional RNN
             enc_output = tf.concat(enc_output,2)
+            # Use only the forward state because the model can't use both states at once
             return enc_output, enc_state[0]
 
 
@@ -415,7 +417,7 @@ def inference_decoding_layer(embeddings, start_token, end_token, dec_cell, initi
 def decoding_layer(dec_embed_input, embeddings, enc_output, enc_state, vocab_size, inputs_length, targets_length, 
                    max_target_length, rnn_size, vocab_to_int, keep_prob, batch_size, num_layers, direction):
     '''Create the decoding cell and attention for the training and inference decoding layers'''
-    # Создаем декодирующий RNN
+    
     with tf.name_scope("RNN_Decoder_Cell"):
         for layer in range(num_layers):
             with tf.variable_scope('decoder_{}'.format(layer)):
@@ -437,9 +439,10 @@ def decoding_layer(dec_embed_input, embeddings, enc_output, enc_state, vocab_siz
                                                               attn_mech,
                                                               rnn_size)
     
-    initial_state = tf.contrib.seq2seq.AttentionWrapperState(enc_state, _zero_state_tensors(rnn_size, 
-                                                                                            batch_size, 
-                                                                                            tf.float32))
+    initial_state = tf.contrib.seq2seq.DynamicAttentionWrapperState(enc_state,
+                                                                    _zero_state_tensors(rnn_size, 
+                                                                                        batch_size, 
+                                                                                        tf.float32))
 
     with tf.variable_scope("decode"):
         training_logits = training_decoding_layer(dec_embed_input, 
@@ -467,6 +470,7 @@ def decoding_layer(dec_embed_input, embeddings, enc_output, enc_state, vocab_siz
 def seq2seq_model(inputs, targets, keep_prob, inputs_length, targets_length, max_target_length, 
                   vocab_size, rnn_size, num_layers, vocab_to_int, batch_size, embedding_size, direction):
     '''Use the previous functions to create the training and inference logits'''
+    
     enc_embeddings = tf.Variable(tf.random_uniform([vocab_size, embedding_size], -1, 1))
     enc_embed_input = tf.nn.embedding_lookup(enc_embeddings, inputs)
     enc_output, enc_state = encoding_layer(rnn_size, inputs_length, num_layers, 
@@ -587,16 +591,16 @@ def build_graph(keep_prob, rnn_size, num_layers, batch_size, learning_rate, embe
     masks = tf.sequence_mask(targets_length, max_target_length, dtype=tf.float32, name='masks')
     
     with tf.name_scope("cost"):
-        # Функция потери
+        # Loss function
         cost = tf.contrib.seq2seq.sequence_loss(training_logits, 
                                                 targets, 
                                                 masks)
         tf.summary.scalar('cost', cost)
 
-    with tf.name_scope("optimizer"):
+    with tf.name_scope("optimze"):
         optimizer = tf.train.AdamOptimizer(learning_rate)
 
-        # Градиентный спуск
+        # Gradient Clipping
         gradients = optimizer.compute_gradients(cost)
         capped_gradients = [(tf.clip_by_value(grad, -5., 5.), var) for grad, var in gradients if grad is not None]
         train_op = optimizer.apply_gradients(capped_gradients)
@@ -614,18 +618,20 @@ def build_graph(keep_prob, rnn_size, num_layers, batch_size, learning_rate, embe
     return graph
 
 
-# Тренируем модель
+# ## Training the Model
 
 # In[74]:
 
 def train(model, epochs, log_string):
+    '''Train the RNN'''
     
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        # Остановка обучения
+
+        # Used to determine when to stop the training early
         testing_loss_summary = []
 
-        # Итерация обучения
+        # Keep track of which batch iteration is being trained
         iteration = 0
         
         display_step = 30 # The progress of the training will be displayed after every 30 batches
@@ -755,12 +761,12 @@ def text_to_ints(text):
 # In[176]:
 
 # Create your own sentence or use one from the dataset
-#text = "Spellin is difficult, whch is wyh you need to study everyday."
-#text = text_to_ints(text)
+text = "Spellin is difficult, whch is wyh you need to study everyday."
+text = text_to_ints(text)
 
-random = np.random.randint(0,len(testing_sorted))
-text = testing_sorted[random]
-text = noise_maker(text, 0.95)
+#random = np.random.randint(0,len(testing_sorted))
+#text = testing_sorted[random]
+#text = noise_maker(text, 0.95)
 
 checkpoint = "./kp=0.75,nl=2,th=0.95.ckpt"
 
