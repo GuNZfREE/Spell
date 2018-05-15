@@ -1,5 +1,5 @@
 
-# coding: utf-8
+# -*- coding: cp1251 -*-
 
 # # Creating a Spell Checker
 
@@ -34,7 +34,6 @@ from sklearn.model_selection import train_test_split
 # In[2]:
 
 # Загружаем книги
-# -*- coding: cp1251 -*-
 def load_book(path):
     input_file = os.path.join(path)
     with open(input_file) as f:
@@ -44,7 +43,6 @@ def load_book(path):
 
 # In[3]:
 # Собираем книги
-# -*- coding: cp1251 -*-
 path = './books_rus/'
 book_files = [f for f in listdir(path) if isfile(join(path, f))]
 book_files = book_files[1:]
@@ -53,7 +51,6 @@ book_files = book_files[1:]
 # In[4]:
 
 # Загружаем все книги в один файл
-# -*- coding: cp1251 -*-
 books = []
 for book in book_files:
     books.append(load_book(path+book))
@@ -62,7 +59,6 @@ for book in book_files:
 # In[5]:
 
 # Вычисляем число слов в каждой из книг
-# -*- coding: cp1251 -*-
 for i in range(len(books)):
     print("There are {} words in {}.".format(len(books[i].split()), book_files[i]))
 
@@ -76,7 +72,6 @@ books[0][:500]
 
 # In[10]:
 # Функция удаления всех ненужных символов
-# -*- coding: cp1251 -*-
 def clean_text(text):
     text = re.sub(r'\n', ' ', text)     
     text = re.sub(r'[{}@_*<>/()~`•"њ|ї&^\і\„#%+=\[\]]','', text)
@@ -104,7 +99,6 @@ def clean_text(text):
 # In[11]:
 
 # Очищаем книги
-# -*- coding: cp1251 -*-
 clean_books = []
 for book in books:
     clean_books.append(clean_text(book))
@@ -118,7 +112,6 @@ clean_books[0][:500]
 
 # In[13]:
 # Переводим все буквы в int
-# -*- coding: cp1251 -*-
 vocab_to_int = {}
 count = 0
 for book in clean_books:
@@ -128,7 +121,6 @@ for book in clean_books:
             count += 1
 
 # Спец-символы
-# -*- coding: cp1251 -*-
 codes = ['<PAD>','<EOS>','<GO>']
 for code in codes:
     vocab_to_int[code] = count
@@ -138,7 +130,6 @@ for code in codes:
 # In[14]:
 
 # Размер словаря слов
-# -*- coding: cp1251 -*-
 vocab_size = len(vocab_to_int)
 print("The vocabulary contains {} characters.".format(vocab_size))
 print(sorted(vocab_to_int))
@@ -149,7 +140,6 @@ print(sorted(vocab_to_int))
 # In[15]:
 
 # Create another dictionary to convert integers to their respective characters
-# -*- coding: cp1251 -*-
 int_to_vocab = {}
 for character, value in vocab_to_int.items():
     int_to_vocab[value] = character
@@ -158,7 +148,6 @@ for character, value in vocab_to_int.items():
 # In[16]:
 
 # Делим текст книг на предложения
-# -*- coding: cp1251 -*-
 sentences = []
 for book in clean_books:
     for sentence in book.split('. '):
