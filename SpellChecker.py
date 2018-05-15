@@ -34,6 +34,7 @@ from sklearn.model_selection import train_test_split
 # In[2]:
 
 # Загружаем книги
+# -*- coding: cp1251 -*-
 def load_book(path):
     input_file = os.path.join(path)
     with open(input_file) as f:
