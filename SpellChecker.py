@@ -1,5 +1,5 @@
 
-# -*- coding: cp1251 -*-
+# coding: utf-8
 
 # # Creating a Spell Checker
 
