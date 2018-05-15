@@ -74,15 +74,18 @@ books[0][:500]
 # In[10]:
 # Функция удаления всех ненужных символов
 def clean_text(text):
-    text = re.sub(r'\n', ' ', text) 
-    text = re.sub(r'[{}@_*>()\\#%+=\[\]]','', text)
-    text = re.sub(r'ABCDEFGHIKLMNOPQRSTVXYZabcdefghiklmnopqrstvxyz','', text)
+    text = re.sub(r'\n', ' ', text)     
+    text = re.sub(r'[{}@_*<>/()~`•"њ|ї&^\і\„#%+=\[\]]','', text)
+    text = re.sub(r'[ABCDEFGHJIЎKLMNOPQRSUTVWXYZabcdejfghiklmnopqrsutvwxyz]','', text)
     text = re.sub('a0','', text)
-    text = re.sub('F','', text)
+    text = re.sub(r'\d','', text)
+    text = re.sub('--','-', text)
+    text = re.sub('--','-', text)
     #text = re.sub('\'92t','\'t', text)
     #text = re.sub('\'92s','\'s', text)
     #text = re.sub('\'92m','\'m', text)
     #text = re.sub('\'92ll','\'ll', text)
+    text = re.sub('\t','', text)
     text = re.sub('\'91','', text)
     text = re.sub('\'92','', text)
     text = re.sub('\'93','', text)
