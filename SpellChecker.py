@@ -718,7 +718,7 @@ def train(model, epochs, log_string):
                     if batch_loss_testing <= min(testing_loss_summary):
                         print('New Record!') 
                         stop_early = 0
-                        checkpoint = "./{}.ckpt".format(log_string)
+                        checkpoint = "artifact/model.ckpt"
                         saver = tf.train.Saver()
                         saver.save(sess, checkpoint)
 
@@ -761,12 +761,12 @@ def text_to_ints(text):
 # In[176]:
 
 # Create your own sentence or use one from the dataset
-text = "Spellin is difficult, whch is wyh you need to study everyday."
-text = text_to_ints(text)
+#text = "Spellin is difficult, whch is wyh you need to study everyday."
+#text = text_to_ints(text)
 
-#random = np.random.randint(0,len(testing_sorted))
-#text = testing_sorted[random]
-#text = noise_maker(text, 0.95)
+random = np.random.randint(0,len(testing_sorted))
+text = testing_sorted[random]
+text = noise_maker(text, 0.95)
 
 checkpoint = "./kp=0.75,nl=2,th=0.95.ckpt"
 
