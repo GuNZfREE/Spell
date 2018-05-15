@@ -43,7 +43,7 @@ def load_book(path):
 
 # In[3]:
 # Собираем книги
-path = './books_rus/'
+path = './book/'
 book_files = [f for f in listdir(path) if isfile(join(path, f))]
 book_files = book_files[1:]
 
