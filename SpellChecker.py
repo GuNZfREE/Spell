@@ -718,7 +718,7 @@ def train(model, epochs, log_string):
                     if batch_loss_testing <= min(testing_loss_summary):
                         print('New Record!') 
                         stop_early = 0
-                        checkpoint = "./artifact/{}.ckpt".format(log_string)
+                        checkpoint = "./{}.ckpt".format(log_string)
                         saver = tf.train.Saver()
                         saver.save(sess, checkpoint)
 
